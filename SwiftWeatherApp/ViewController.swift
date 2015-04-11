@@ -2,11 +2,9 @@
 //  ViewController.swift
 //  SwiftWeatherApp
 //
-//  Created by Jonathan Lin on 2015/4/11.
-//  Copyright (c) 2015年 LittleLin. All rights reserved.
-//
 
 import UIKit
+import SwiftHTTP
 
 class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate {
 
@@ -16,6 +14,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
         // Do any additional setup after loading the view, typically from a nib.
         self.setupWeatherOverviewFrame()
+        
+        self.updateWeatherInfo(121.53, latitude: 25.05);
     }
     
     func setupWeatherOverviewFrame() {
@@ -82,6 +82,34 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         header.addSubview(iconView)
     }
 
+    func updateWeatherInfo(longitude: Float, latitude: Float) {
+        var request = HTTPTask()
+        request.responseSerializer = JSONResponseSerializer()
+        request.GET("http://api.openweathermap.org/data/2.5/weather",
+            //parameters: ["lon": longitude, "lat": latitude],
+            parameters: ["q": "Taipei", "units": "metric"],
+            success: {(response: HTTPResponse) in
+                if let weatherData = response.responseObject as? Dictionary<String, AnyObject> {
+                    self.updateUISuccess(weatherData)
+                }
+            },
+            failure: {(error: NSError, response: HTTPResponse?) in
+                println("error: \(error)")
+            }
+        )
+    }
+    
+    func updateUISuccess(weatherData : NSDictionary!) {
+        if let tempResult = weatherData["main"]?["temp"] as? Double {
+            var temperature = round(10 * tempResult) / 10
+            var cityName = weatherData["name"] as! String
+            
+            println("cityName=\(cityName), temperature=\(temperature)")
+        } else {
+            
+        }
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
