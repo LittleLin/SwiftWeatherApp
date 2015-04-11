@@ -12,7 +12,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Do any additional setup after loading the view, typically from a nib.
+        // Do any additional setup after loading the view, typically from a nib.        
         self.setupWeatherOverviewFrame()
         
         self.updateWeatherInfo(121.53, latitude: 25.05);
@@ -94,6 +94,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 }
             },
             failure: {(error: NSError, response: HTTPResponse?) in
+                // TODO: error handling
                 println("error: \(error)")
             }
         )
@@ -120,20 +121,66 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return 2
+    }
+    
+    func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+        var cellCount = CGFloat(self.tableView(tableView, numberOfRowsInSection: indexPath.section))
+        return UIScreen.mainScreen().bounds.height / cellCount
     }
 
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        var cell = self.layoutTable.dequeueReusableCellWithIdentifier("Cell") as! UITableViewCell?
-        cell?.selectionStyle = UITableViewCellSelectionStyle.None
-        cell?.backgroundColor = UIColor(white:0, alpha:0.2)
-        cell?.textLabel?.textColor = UIColor.whiteColor()
-        cell?.detailTextLabel?.textColor = UIColor.whiteColor()
-        cell?.textLabel?.text = "Weather Podcast @ \(indexPath.section) / \(indexPath.row)"
+        var cell = self.layoutTable.dequeueReusableCellWithIdentifier("Cell") as! UITableViewCell
+        cell.selectionStyle = UITableViewCellSelectionStyle.None
+        cell.backgroundColor = UIColor(white:0, alpha:0.2)
+        cell.textLabel?.textColor = UIColor.whiteColor()
+        cell.textLabel?.backgroundColor = UIColor.clearColor()
+        cell.detailTextLabel?.textColor = UIColor.whiteColor()
+        cell.detailTextLabel?.backgroundColor = UIColor.clearColor()
+        cell.textLabel?.text = "Weather Podcast @ \(indexPath.section) / \(indexPath.row)"
         
-        // TODO: Setup the cell
+        // Setup the cell's content
+        if (indexPath.section == 0) {
+            if (indexPath.row == 0) {
+                self.configureHeaderCell(cell, title: "Hourly Forecast")
+            } else {
+                self.configureHourlyCell(cell);
+            }
+        } else if (indexPath.section == 1) {
+            if (indexPath.row == 0) {
+                self.configureHeaderCell(cell, title: "Daily Forecast")
+            } else {
+                self.configureDailyCell(cell);
+            }
+        }
         
-        return cell!
+        return cell
+    }
+    
+    func configureHeaderCell(cell: UITableViewCell, title: String) {
+        cell.textLabel?.font = UIFont(name: "HelveticaNeue-Medium", size: 18)
+        cell.textLabel?.text = title
+        cell.detailTextLabel?.text = ""
+        cell.imageView?.image = nil
+    }
+    
+    func configureHourlyCell(cell: UITableViewCell) {
+        cell.textLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        cell.detailTextLabel?.font = UIFont(name: "HelveticaNeue-Medium", size: 18)
+        cell.textLabel?.text = "test"
+        cell.detailTextLabel?.text = "detail"
+        cell.imageView?.image = UIImage(named: "weather-broken");
+        cell.imageView?.contentMode = UIViewContentMode.ScaleAspectFit
+    }
+    
+    func configureDailyCell(cell: UITableViewCell) {
+        cell.textLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        cell.detailTextLabel?.font = UIFont(name: "HelveticaNeue-Medium", size: 18)
+        cell.textLabel?.text = "test"
+        cell.detailTextLabel?.text = "detail"
+        cell.detailTextLabel
+        cell.imageView?.image = UIImage(named: "weather-clear");
+        cell.imageView?.contentMode = UIViewContentMode.ScaleAspectFit
     }
 }
 
