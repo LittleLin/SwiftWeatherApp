@@ -9,16 +9,45 @@ import SwiftHTTP
 class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate {
 
     @IBOutlet weak var layoutTable: UITableView!
+    var cityLabel: UILabel?
+    var temperatureLabel: UILabel?
+    var hiloLabel: UILabel?
+    var conditionsLabel: UILabel?
+    var conditionsIconView: UIImageView?
+    
+    var _iconMap: Dictionary<String, String> = [
+        "01d" : "weather-clear",
+        "02d" : "weather-few",
+        "03d" : "weather-few",
+        "04d" : "weather-broken",
+        "09d" : "weather-shower",
+        "10d" : "weather-rain",
+        "11d" : "weather-tstorm",
+        "13d" : "weather-snow",
+        "50d" : "weather-mist",
+        "01n" : "weather-moon",
+        "02n" : "weather-few-night",
+        "03n" : "weather-few-night",
+        "04n" : "weather-broken",
+        "09n" : "weather-shower",
+        "10n" : "weather-rain-night",
+        "11n" : "weather-tstorm",
+        "13n" : "weather-snow",
+        "50n" : "weather-mist"
+    ]
+    
+    var _openWeatherClient = OpenWeatherClient()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Do any additional setup after loading the view, typically from a nib.        
-        self.setupWeatherOverviewFrame()
+        // Do any additional setup after loading the view, typically from a nib.
+        self.setupOverviewWeatherLayout()
         
         self.updateWeatherInfo(121.53, latitude: 25.05);
     }
     
-    func setupWeatherOverviewFrame() {
+    func setupOverviewWeatherLayout() {
         var headerFrame: CGRect = UIScreen.mainScreen().bounds
         var inset: CGFloat = 20
         
@@ -43,43 +72,43 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         self.layoutTable.tableHeaderView = header
         
         // Create temperature label
-        var temperatureLabel = UILabel(frame: temperatureFrame)
-        temperatureLabel.backgroundColor = UIColor.clearColor()
-        temperatureLabel.textColor = UIColor.whiteColor()
-        temperatureLabel.text = "0°"
-        temperatureLabel.font = UIFont(name: "HelveticaNeue-UltraLight", size: 80)
-        header.addSubview(temperatureLabel)
+        temperatureLabel = UILabel(frame: temperatureFrame)
+        temperatureLabel!.backgroundColor = UIColor.clearColor()
+        temperatureLabel!.textColor = UIColor.whiteColor()
+        temperatureLabel!.text = "0°"
+        temperatureLabel!.font = UIFont(name: "HelveticaNeue-UltraLight", size: 80)
+        header.addSubview(temperatureLabel!)
         
         // Create hilo label
-        var hiloLabel = UILabel(frame: hiloFrame)
-        hiloLabel.backgroundColor = UIColor.clearColor()
-        hiloLabel.textColor = UIColor.whiteColor()
-        hiloLabel.text = "0° / 0°"
-        hiloLabel.font = UIFont(name: "HelveticaNeue-UltraLight", size: 28)
-        header.addSubview(hiloLabel)
+        hiloLabel = UILabel(frame: hiloFrame)
+        hiloLabel!.backgroundColor = UIColor.clearColor()
+        hiloLabel!.textColor = UIColor.whiteColor()
+        hiloLabel!.text = "0° / 0°"
+        hiloLabel!.font = UIFont(name: "HelveticaNeue-UltraLight", size: 28)
+        header.addSubview(hiloLabel!)
         
         // Create city label
-        var cityLabel = UILabel(frame: CGRectMake(0, 35, self.view.bounds.size.width, 30))
-        cityLabel.backgroundColor = UIColor.clearColor()
-        cityLabel.textColor = UIColor.whiteColor()
-        cityLabel.text = "Loading..."
-        cityLabel.font = UIFont(name: "HelveticaNeue-UltraLight", size: 30)
-        cityLabel.textAlignment = NSTextAlignment.Center
-        header.addSubview(cityLabel)
+        cityLabel = UILabel(frame: CGRectMake(0, 35, self.view.bounds.size.width, 30))
+        cityLabel!.backgroundColor = UIColor.clearColor()
+        cityLabel!.textColor = UIColor.whiteColor()
+        cityLabel!.text = "Loading..."
+        cityLabel!.font = UIFont(name: "HelveticaNeue-Medium", size: 30)
+        cityLabel!.textAlignment = NSTextAlignment.Center
+        header.addSubview(cityLabel!)
         
         // Create conditions label
-        var conditionsLabel = UILabel(frame: conditionsFrame)
-        conditionsLabel.backgroundColor = UIColor.clearColor()
-        conditionsLabel.textColor = UIColor.whiteColor()
-        conditionsLabel.font = UIFont(name: "HelveticaNeue-UltraLight", size: 18)
-        conditionsLabel.text = "Clear"
-        header.addSubview(conditionsLabel)
+        conditionsLabel = UILabel(frame: conditionsFrame)
+        conditionsLabel!.backgroundColor = UIColor.clearColor()
+        conditionsLabel!.textColor = UIColor.whiteColor()
+        conditionsLabel!.font = UIFont(name: "HelveticaNeue-UltraLight", size: 18)
+        conditionsLabel!.text = "Clear"
+        header.addSubview(conditionsLabel!)
         
         // Create icon view
-        var iconView = UIImageView(frame: iconFrame)
-        iconView.contentMode = UIViewContentMode.ScaleAspectFit
-        iconView.backgroundColor = UIColor.clearColor()
-        header.addSubview(iconView)
+        conditionsIconView = UIImageView(frame: iconFrame)
+        conditionsIconView!.contentMode = UIViewContentMode.ScaleAspectFit
+        conditionsIconView!.backgroundColor = UIColor.clearColor()
+        header.addSubview(conditionsIconView!)
     }
 
     func updateWeatherInfo(longitude: Float, latitude: Float) {
@@ -90,7 +119,9 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             parameters: ["q": "Taipei", "units": "metric"],
             success: {(response: HTTPResponse) in
                 if let weatherData = response.responseObject as? Dictionary<String, AnyObject> {
-                    self.updateUISuccess(weatherData)
+                    var weatherCondition = self.extractCurrentWeatherData(weatherData);
+                    self.updateUISuccess(weatherCondition)
+                    self.layoutTable.reloadData();
                 }
             },
             failure: {(error: NSError, response: HTTPResponse?) in
@@ -99,16 +130,35 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             }
         )
     }
+
+    func extractCurrentWeatherData(weatherData : NSDictionary!) -> WeatherCondition {
+        var temperature = round(10 * (weatherData["main"]?["temp"] as? Double)!) / 10
+        var temperatureLow = round(10 * (weatherData["main"]?["temp_min"] as? Double)!) / 10
+        var temperatureHigh = round(10 * (weatherData["main"]?["temp_max"] as? Double)!) / 10
+        var cityName = weatherData["name"] as! String
+        var conditionString = weatherData["weather"]?[0]?["main"] as! String
+        var weatherIconId = weatherData["weather"]?[0]?["icon"] as! String
+        
+        var weatherCondition = WeatherCondition();
+        weatherCondition.temperature = temperature
+        weatherCondition.temperatureLow = temperatureLow
+        weatherCondition.temperatureHigh = temperatureHigh
+        weatherCondition.cityName = cityName
+        weatherCondition.condition = conditionString
+        weatherCondition.iconId = weatherIconId
+        return weatherCondition
+    }
     
-    func updateUISuccess(weatherData : NSDictionary!) {
-        if let tempResult = weatherData["main"]?["temp"] as? Double {
-            var temperature = round(10 * tempResult) / 10
-            var cityName = weatherData["name"] as! String
-            
-            println("cityName=\(cityName), temperature=\(temperature)")
-        } else {
-            
-        }
+    func updateUISuccess(weatherCondition : WeatherCondition) {
+        self.cityLabel!.text = weatherCondition.cityName
+        self.temperatureLabel!.text = "\(weatherCondition.temperature)°"
+        self.hiloLabel!.text = "\(weatherCondition.temperatureHigh)° / \(weatherCondition.temperatureLow)°"
+        self.conditionsLabel!.text = weatherCondition.condition
+        self.conditionsIconView?.image = UIImage(named: weatherCondition.getIconName())        
+    }
+    
+    func iconIdToIconName(iconId: String) -> String {
+        return _iconMap[iconId]!;
     }
     
     override func didReceiveMemoryWarning() {
@@ -116,17 +166,13 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         // Dispose of any resources that can be recreated.
     }
 
+    // MARK: UITableViewDataSource
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 2
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 2
-    }
-    
-    func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        var cellCount = CGFloat(self.tableView(tableView, numberOfRowsInSection: indexPath.section))
-        return UIScreen.mainScreen().bounds.height / cellCount
     }
 
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -137,9 +183,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         cell.textLabel?.backgroundColor = UIColor.clearColor()
         cell.detailTextLabel?.textColor = UIColor.whiteColor()
         cell.detailTextLabel?.backgroundColor = UIColor.clearColor()
-        cell.textLabel?.text = "Weather Podcast @ \(indexPath.section) / \(indexPath.row)"
         
-        // Setup the cell's content
+        // Setup cell's content
         if (indexPath.section == 0) {
             if (indexPath.row == 0) {
                 self.configureHeaderCell(cell, title: "Hourly Forecast")
@@ -181,6 +226,12 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         cell.detailTextLabel
         cell.imageView?.image = UIImage(named: "weather-clear");
         cell.imageView?.contentMode = UIViewContentMode.ScaleAspectFit
+    }
+    
+    // MARK: UITableViewDelegate
+    func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+        var cellCount = CGFloat(self.tableView(tableView, numberOfRowsInSection: indexPath.section))
+        return UIScreen.mainScreen().bounds.height / cellCount
     }
 }
 
