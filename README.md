@@ -10,7 +10,7 @@ Screenshot
 
 ![Screenshot](Screenshot.png)
 
-Source of wallpaper
+Wallpaper Source
 -------------------
 - [FreeiOS8.com - ag66-wall-e-disney-want-go-home-art](http://freeios8.com/ag66-wall-e-disney-want-go-home-art/) 
 
