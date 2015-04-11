@@ -17,8 +17,6 @@ class OpenWeatherClient {
                 if let weatherData = response.responseObject as? Dictionary<String, AnyObject> {
                     let weatherCondition = self.extractCurrentWeatherData(weatherData);
                     success(weatherCondition)
-                    //self.updateUISuccess(weatherCondition)
-                    //self.layoutTable.reloadData();
                 }
             },
             failure: {(error: NSError, response: HTTPResponse?) in
@@ -45,5 +43,45 @@ class OpenWeatherClient {
         weatherCondition.condition = conditionString
         weatherCondition.iconId = weatherIconId
         return weatherCondition
+    }
+    
+    func fetchDailyForecast(longitude: Float, latitude: Float, success: ([WeatherCondition]) -> Void) {
+        var request = HTTPTask()
+        request.responseSerializer = JSONResponseSerializer()
+        request.GET("http://api.openweathermap.org/data/2.5/forecast/daily",
+            //parameters: ["lon": longitude, "lat": latitude],
+            parameters: ["q": "Taipei", "units": "metric", "cnt": 8],
+            success: {(response: HTTPResponse) in
+                if let weatherData = response.responseObject as? Dictionary<String, AnyObject> {
+                    let dailyForecastData = self.extractDailyForecastData(weatherData);
+                    success(dailyForecastData)
+                }
+            },
+            failure: {(error: NSError, response: HTTPResponse?) in
+                // TODO: error handling
+                println("error: \(error)")
+            }
+        )
+    }
+    
+    func extractDailyForecastData(weatherData : Dictionary<String, AnyObject>) -> [WeatherCondition] {
+        var responsedData = weatherData["list"] as! [Dictionary<String, AnyObject>];
+        var dateFormat = NSDateFormatter();
+        dateFormat.dateFormat = "EEEE"
+        
+        var forecastData = [WeatherCondition]()
+        for item in responsedData {
+            var weatherCondition = WeatherCondition()
+            weatherCondition.condition = item["weather"]?[0]?["main"] as! String
+            weatherCondition.temperatureLow = round(10 * (item["temp"]?["min"] as! Double)) / 10
+            weatherCondition.temperatureHigh = round(10 * (item["temp"]?["max"] as! Double)) / 10
+            weatherCondition.iconId = item["weather"]?[0]?["icon"] as! String
+            var date = NSDate(timeIntervalSince1970: item["dt"] as! NSTimeInterval)
+            weatherCondition.date = dateFormat.stringFromDate(date)
+            
+            forecastData.append(weatherCondition)
+        }
+        
+        return forecastData;
     }
 }

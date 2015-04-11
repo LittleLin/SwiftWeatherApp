@@ -17,6 +17,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     private var _openWeatherClient = OpenWeatherClient()
     
+    private var _dailyForecastData = [WeatherCondition]()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -24,6 +26,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         self.setupOverviewWeatherLayout()
         
         self._openWeatherClient.fetchCurrentWeatherInfo(121.53, latitude: 25.05, success: updateUISuccess)
+        
+        self._openWeatherClient.fetchDailyForecast(121.53, latitude: 25.05, success: updateDailyForecast)
     }
     
     func setupOverviewWeatherLayout() {
@@ -98,6 +102,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         self.conditionsIconView?.image = UIImage(named: weatherCondition.getIconName())
     }
     
+    func updateDailyForecast(dailyForecastData : [WeatherCondition]) {
+        self._dailyForecastData = dailyForecastData
+        self.layoutTable.reloadData()
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -109,7 +118,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 2
+        if (section == 0) {
+            return 2;
+        } else {
+            return self._dailyForecastData.count + 1;
+        }
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -132,7 +145,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             if (indexPath.row == 0) {
                 self.configureHeaderCell(cell, title: "Daily Forecast")
             } else {
-                self.configureDailyCell(cell);
+                self.configureDailyCell(cell, forecastData: self._dailyForecastData[indexPath.row - 1]);
             }
         }
         
@@ -155,13 +168,12 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         cell.imageView?.contentMode = UIViewContentMode.ScaleAspectFit
     }
     
-    func configureDailyCell(cell: UITableViewCell) {
+    func configureDailyCell(cell: UITableViewCell, forecastData: WeatherCondition) {
         cell.textLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 18)
         cell.detailTextLabel?.font = UIFont(name: "HelveticaNeue-Medium", size: 18)
-        cell.textLabel?.text = "test"
-        cell.detailTextLabel?.text = "detail"
-        cell.detailTextLabel
-        cell.imageView?.image = UIImage(named: "weather-clear");
+        cell.textLabel?.text = forecastData.date
+        cell.detailTextLabel?.text = "\(forecastData.temperatureHigh)° / \(forecastData.temperatureLow)°"
+        cell.imageView?.image = UIImage(named: forecastData.getIconName());
         cell.imageView?.contentMode = UIViewContentMode.ScaleAspectFit
     }
     

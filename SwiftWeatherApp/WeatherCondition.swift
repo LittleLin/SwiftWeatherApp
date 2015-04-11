@@ -12,6 +12,7 @@ struct WeatherCondition {
     var cityName: String = ""
     var condition: String = ""
     var iconId: String = ""
+    var date: String = ""
     
     static var iconMap: Dictionary<String, String> = [
         "01d" : "weather-clear",
