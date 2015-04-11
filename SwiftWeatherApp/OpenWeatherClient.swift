@@ -44,6 +44,50 @@ class OpenWeatherClient {
         weatherCondition.iconId = weatherIconId
         return weatherCondition
     }
+
+    func fetchHourlyForecast(longitude: Float, latitude: Float, success: ([WeatherCondition]) -> Void) {
+        var request = HTTPTask()
+        request.responseSerializer = JSONResponseSerializer()
+        request.GET("http://api.openweathermap.org/data/2.5/forecast",
+            //parameters: ["lon": longitude, "lat": latitude],
+            parameters: ["q": "Taipei", "units": "metric", "cnt": 12],
+            success: {(response: HTTPResponse) in
+                if let weatherData = response.responseObject as? Dictionary<String, AnyObject> {
+                    let dailyForecastData = self.extractHourlyForecastData(weatherData);
+                    success(dailyForecastData)
+                }
+            },
+            failure: {(error: NSError, response: HTTPResponse?) in
+                // TODO: error handling
+                println("error: \(error)")
+            }
+        )
+    }
+    
+    func extractHourlyForecastData(weatherData : Dictionary<String, AnyObject>) -> [WeatherCondition] {
+        var responsedData = weatherData["list"] as! [Dictionary<String, AnyObject>];
+        var dateFormat = NSDateFormatter();
+        dateFormat.dateFormat = "h a"
+        
+        var forecastData = [WeatherCondition]()
+        var count = 0;
+        for item in responsedData {
+            var weatherCondition = WeatherCondition()
+            weatherCondition.condition = item["weather"]?[0]?["main"] as! String
+            weatherCondition.temperature = round(10 * (item["main"]?["temp"] as! Double)) / 10
+            weatherCondition.iconId = item["weather"]?[0]?["icon"] as! String
+            var date = NSDate(timeIntervalSince1970: item["dt"] as! NSTimeInterval)
+            weatherCondition.date = dateFormat.stringFromDate(date)
+            
+            forecastData.append(weatherCondition)
+
+            if (++count == 11) {
+                break;
+            }
+        }
+        
+        return forecastData;
+    }
     
     func fetchDailyForecast(longitude: Float, latitude: Float, success: ([WeatherCondition]) -> Void) {
         var request = HTTPTask()

@@ -16,7 +16,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     var conditionsIconView: UIImageView?
     
     private var _openWeatherClient = OpenWeatherClient()
-    
+
+    private var _hourlyForecastData = [WeatherCondition]()
     private var _dailyForecastData = [WeatherCondition]()
     
     override func viewDidLoad() {
@@ -26,6 +27,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         self.setupOverviewWeatherLayout()
         
         self._openWeatherClient.fetchCurrentWeatherInfo(121.53, latitude: 25.05, success: updateUISuccess)
+
+        self._openWeatherClient.fetchHourlyForecast(121.53, latitude: 25.05, success: updateHourlyForecast)
         
         self._openWeatherClient.fetchDailyForecast(121.53, latitude: 25.05, success: updateDailyForecast)
     }
@@ -102,6 +105,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         self.conditionsIconView?.image = UIImage(named: weatherCondition.getIconName())
     }
     
+    func updateHourlyForecast(hourlyForecastData : [WeatherCondition]) {
+        self._hourlyForecastData = hourlyForecastData
+        self.layoutTable.reloadData()
+    }
+    
     func updateDailyForecast(dailyForecastData : [WeatherCondition]) {
         self._dailyForecastData = dailyForecastData
         self.layoutTable.reloadData()
@@ -119,9 +127,9 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if (section == 0) {
-            return 2;
+            return self._hourlyForecastData.count + 1
         } else {
-            return self._dailyForecastData.count + 1;
+            return self._dailyForecastData.count + 1
         }
     }
     
@@ -139,7 +147,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             if (indexPath.row == 0) {
                 self.configureHeaderCell(cell, title: "Hourly Forecast")
             } else {
-                self.configureHourlyCell(cell);
+                self.configureHourlyCell(cell, forecastData: self._hourlyForecastData[indexPath.row - 1]);
             }
         } else if (indexPath.section == 1) {
             if (indexPath.row == 0) {
@@ -159,12 +167,12 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         cell.imageView?.image = nil
     }
     
-    func configureHourlyCell(cell: UITableViewCell) {
+    func configureHourlyCell(cell: UITableViewCell, forecastData: WeatherCondition) {
         cell.textLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 18)
         cell.detailTextLabel?.font = UIFont(name: "HelveticaNeue-Medium", size: 18)
-        cell.textLabel?.text = "test"
-        cell.detailTextLabel?.text = "detail"
-        cell.imageView?.image = UIImage(named: "weather-broken");
+        cell.textLabel?.text = forecastData.date
+        cell.detailTextLabel?.text = "\(forecastData.temperature)°"
+        cell.imageView?.image = UIImage(named: forecastData.getIconName())
         cell.imageView?.contentMode = UIViewContentMode.ScaleAspectFit
     }
     
@@ -173,7 +181,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         cell.detailTextLabel?.font = UIFont(name: "HelveticaNeue-Medium", size: 18)
         cell.textLabel?.text = forecastData.date
         cell.detailTextLabel?.text = "\(forecastData.temperatureHigh)° / \(forecastData.temperatureLow)°"
-        cell.imageView?.image = UIImage(named: forecastData.getIconName());
+        cell.imageView?.image = UIImage(named: forecastData.getIconName())
         cell.imageView?.contentMode = UIViewContentMode.ScaleAspectFit
     }
     
