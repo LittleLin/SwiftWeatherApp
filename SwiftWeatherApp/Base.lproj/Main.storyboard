@@ -73,6 +73,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="Wallpaper" width="320" height="568"/>
+        <image name="Wallpaper" width="640" height="1136"/>
     </resources>
 </document>

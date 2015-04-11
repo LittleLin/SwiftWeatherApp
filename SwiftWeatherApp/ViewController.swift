@@ -62,7 +62,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         temperatureLabel!.backgroundColor = UIColor.clearColor()
         temperatureLabel!.textColor = UIColor.whiteColor()
         temperatureLabel!.text = "0°"
-        temperatureLabel!.font = UIFont(name: "HelveticaNeue-UltraLight", size: 80)
+        temperatureLabel!.font = UIFont(name: "HelveticaNeue-Bold", size: 80)
         header.addSubview(temperatureLabel!)
         
         // Create hilo label
@@ -70,7 +70,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         hiloLabel!.backgroundColor = UIColor.clearColor()
         hiloLabel!.textColor = UIColor.whiteColor()
         hiloLabel!.text = "0° / 0°"
-        hiloLabel!.font = UIFont(name: "HelveticaNeue-UltraLight", size: 28)
+        hiloLabel!.font = UIFont(name: "HelveticaNeue-Light", size: 28)
         header.addSubview(hiloLabel!)
         
         // Create city label
@@ -86,7 +86,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         conditionsLabel = UILabel(frame: conditionsFrame)
         conditionsLabel!.backgroundColor = UIColor.clearColor()
         conditionsLabel!.textColor = UIColor.whiteColor()
-        conditionsLabel!.font = UIFont(name: "HelveticaNeue-UltraLight", size: 18)
+        conditionsLabel!.font = UIFont(name: "HelveticaNeue-Medium", size: 25)
         conditionsLabel!.text = "Clear"
         header.addSubview(conditionsLabel!)
         
@@ -113,6 +113,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     func updateDailyForecast(dailyForecastData : [WeatherCondition]) {
         self._dailyForecastData = dailyForecastData
         self.layoutTable.reloadData()
+    }
+    
+    override func preferredStatusBarStyle() -> UIStatusBarStyle {
+        return UIStatusBarStyle.LightContent
     }
     
     override func didReceiveMemoryWarning() {
