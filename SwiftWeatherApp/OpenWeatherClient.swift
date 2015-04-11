@@ -7,15 +7,17 @@ import Foundation
 import SwiftHTTP
 
 class OpenWeatherClient {
-    func fetchCurrentWeatherInfo(longitude: Float, latitude: Float, success: (WeatherCondition) -> Void) {
+    func fetchCurrentWeatherInfo(longitude: Double, latitude: Double, cityName: String?, success: (WeatherCondition) -> Void) {
         var request = HTTPTask()
         request.responseSerializer = JSONResponseSerializer()
         request.GET("http://api.openweathermap.org/data/2.5/weather",
-            //parameters: ["lon": longitude, "lat": latitude],
-            parameters: ["q": "Taipei", "units": "metric"],
+            parameters: ["lon": longitude, "lat": latitude, "units": "metric"],
             success: {(response: HTTPResponse) in
                 if let weatherData = response.responseObject as? Dictionary<String, AnyObject> {
-                    let weatherCondition = self.extractCurrentWeatherData(weatherData);
+                    var weatherCondition = self.extractCurrentWeatherData(weatherData);
+                    if (cityName != nil) {
+                        weatherCondition.cityName = cityName!
+                    }
                     success(weatherCondition)
                 }
             },
@@ -24,7 +26,6 @@ class OpenWeatherClient {
                 println("error: \(error)")
             }
         )
-
     }
     
     private func extractCurrentWeatherData(weatherData : NSDictionary!) -> WeatherCondition {
@@ -45,12 +46,11 @@ class OpenWeatherClient {
         return weatherCondition
     }
 
-    func fetchHourlyForecast(longitude: Float, latitude: Float, success: ([WeatherCondition]) -> Void) {
+    func fetchHourlyForecast(longitude: Double, latitude: Double, success: ([WeatherCondition]) -> Void) {
         var request = HTTPTask()
         request.responseSerializer = JSONResponseSerializer()
         request.GET("http://api.openweathermap.org/data/2.5/forecast",
-            //parameters: ["lon": longitude, "lat": latitude],
-            parameters: ["q": "Taipei", "units": "metric", "cnt": 12],
+            parameters: ["lon": longitude, "lat": latitude, "units": "metric", "cnt": 12],
             success: {(response: HTTPResponse) in
                 if let weatherData = response.responseObject as? Dictionary<String, AnyObject> {
                     let dailyForecastData = self.extractHourlyForecastData(weatherData);
@@ -89,12 +89,11 @@ class OpenWeatherClient {
         return forecastData;
     }
     
-    func fetchDailyForecast(longitude: Float, latitude: Float, success: ([WeatherCondition]) -> Void) {
+    func fetchDailyForecast(longitude: Double, latitude: Double, success: ([WeatherCondition]) -> Void) {
         var request = HTTPTask()
         request.responseSerializer = JSONResponseSerializer()
         request.GET("http://api.openweathermap.org/data/2.5/forecast/daily",
-            //parameters: ["lon": longitude, "lat": latitude],
-            parameters: ["q": "Taipei", "units": "metric", "cnt": 8],
+            parameters: ["lon": longitude, "lat": latitude, "units": "metric", "cnt": 8],
             success: {(response: HTTPResponse) in
                 if let weatherData = response.responseObject as? Dictionary<String, AnyObject> {
                     let dailyForecastData = self.extractDailyForecastData(weatherData);

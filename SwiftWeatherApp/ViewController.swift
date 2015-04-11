@@ -4,9 +4,9 @@
 //
 
 import UIKit
-import SwiftHTTP
+import CoreLocation
 
-class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate {
+class ViewController: UIViewController, CLLocationManagerDelegate, UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate {
     
     @IBOutlet weak var layoutTable: UITableView!
     var cityLabel: UILabel?
@@ -20,17 +20,14 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     private var _hourlyForecastData = [WeatherCondition]()
     private var _dailyForecastData = [WeatherCondition]()
     
+    let locationManager = CLLocationManager()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Do any additional setup after loading the view, typically from a nib.
         self.setupOverviewWeatherLayout()
-        
-        self._openWeatherClient.fetchCurrentWeatherInfo(121.53, latitude: 25.05, success: updateUISuccess)
-
-        self._openWeatherClient.fetchHourlyForecast(121.53, latitude: 25.05, success: updateHourlyForecast)
-        
-        self._openWeatherClient.fetchDailyForecast(121.53, latitude: 25.05, success: updateDailyForecast)
+        self.triggerLocationServices()
     }
     
     func setupOverviewWeatherLayout() {
@@ -94,11 +91,33 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         conditionsIconView = UIImageView(frame: iconFrame)
         conditionsIconView!.contentMode = UIViewContentMode.ScaleAspectFit
         conditionsIconView!.backgroundColor = UIColor.clearColor()
-        header.addSubview(conditionsIconView!)
+        header.addSubview(conditionsIconView!)        
     }
     
-    func updateUISuccess(weatherCondition : WeatherCondition) {
-        self.cityLabel!.text = weatherCondition.cityName
+    func updateWeatherInfo(longitude: Double, latitude: Double, cityName: String?) {
+        self._openWeatherClient.fetchCurrentWeatherInfo(longitude, latitude: latitude, cityName: cityName, success: updateOverviewWeatherInfo)
+        self._openWeatherClient.fetchHourlyForecast(longitude, latitude: latitude, success: updateHourlyForecast)
+        self._openWeatherClient.fetchDailyForecast(longitude, latitude: latitude, success: updateDailyForecast)        
+    }
+    
+    func triggerLocationServices() {
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        if CLLocationManager.locationServicesEnabled() {
+            if self.locationManager.respondsToSelector("requestAlwaysAuthorization") {
+                locationManager.requestAlwaysAuthorization()
+            } else {
+                self.refreshLocation()
+            }
+        }
+    }
+    
+    func refreshLocation() {
+        self.locationManager.startUpdatingLocation()
+    }
+    
+    func updateOverviewWeatherInfo(weatherCondition : WeatherCondition) {
+        self.cityLabel?.text = weatherCondition.cityName
         self.temperatureLabel!.text = "\(weatherCondition.temperature)°"
         self.hiloLabel!.text = "\(weatherCondition.temperatureHigh)° / \(weatherCondition.temperatureLow)°"
         self.conditionsLabel!.text = weatherCondition.condition
@@ -124,7 +143,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         // Dispose of any resources that can be recreated.
     }
     
-    // MARK: UITableViewDataSource
+    // MARK: - UITableViewDataSource
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 2
     }
@@ -189,10 +208,38 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         cell.imageView?.contentMode = UIViewContentMode.ScaleAspectFit
     }
     
-    // MARK: UITableViewDelegate
+    // MARK: - UITableViewDelegate
     func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
         var cellCount = CGFloat(self.tableView(tableView, numberOfRowsInSection: indexPath.section))
         return UIScreen.mainScreen().bounds.height / cellCount
+    }
+    
+    // MARK: - CLLocationManagerDelegate
+    func locationManager(manager: CLLocationManager!, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
+        if status == CLAuthorizationStatus.AuthorizedWhenInUse || status == CLAuthorizationStatus.AuthorizedAlways {
+            self.refreshLocation()
+        }
+    }
+    
+    func locationManager(manager: CLLocationManager!, didUpdateLocations locations: [AnyObject]!) {
+        var location: CLLocation = locations[locations.count - 1] as! CLLocation;
+        locationManager.stopUpdatingLocation();
+
+        // Get the city name more precisely
+        var geoCoder = CLGeocoder()
+        geoCoder.reverseGeocodeLocation(location, completionHandler: { (placemarks, error) -> Void in
+            var cityName : String?
+            let placeArray = placemarks as! [CLPlacemark]
+            if (placeArray.count > 0) {
+                cityName =  placeArray[0].addressDictionary["City"] as? String
+            }
+
+            self.updateWeatherInfo(location.coordinate.longitude, latitude: location.coordinate.latitude, cityName: cityName)
+        })
+    }
+    
+    func locationManager(manager: CLLocationManager!, didFailWithError error: NSError!) {
+        // TODO: error handling
     }
 }
 
