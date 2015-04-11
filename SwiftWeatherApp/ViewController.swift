@@ -45,7 +45,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         // Create temperature label
         var temperatureLabel = UILabel(frame: temperatureFrame)
         temperatureLabel.backgroundColor = UIColor.clearColor()
-        temperatureLabel.textColor = UIColor.blackColor()
+        temperatureLabel.textColor = UIColor.whiteColor()
         temperatureLabel.text = "0°"
         temperatureLabel.font = UIFont(name: "HelveticaNeue-UltraLight", size: 80)
         header.addSubview(temperatureLabel)
@@ -53,7 +53,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         // Create hilo label
         var hiloLabel = UILabel(frame: hiloFrame)
         hiloLabel.backgroundColor = UIColor.clearColor()
-        hiloLabel.textColor = UIColor.blackColor()
+        hiloLabel.textColor = UIColor.whiteColor()
         hiloLabel.text = "0° / 0°"
         hiloLabel.font = UIFont(name: "HelveticaNeue-UltraLight", size: 28)
         header.addSubview(hiloLabel)
@@ -61,7 +61,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         // Create city label
         var cityLabel = UILabel(frame: CGRectMake(0, 35, self.view.bounds.size.width, 30))
         cityLabel.backgroundColor = UIColor.clearColor()
-        cityLabel.textColor = UIColor.blackColor()
+        cityLabel.textColor = UIColor.whiteColor()
         cityLabel.text = "Loading..."
         cityLabel.font = UIFont(name: "HelveticaNeue-UltraLight", size: 30)
         cityLabel.textAlignment = NSTextAlignment.Center
@@ -70,7 +70,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         // Create conditions label
         var conditionsLabel = UILabel(frame: conditionsFrame)
         conditionsLabel.backgroundColor = UIColor.clearColor()
-        conditionsLabel.textColor = UIColor.blackColor()
+        conditionsLabel.textColor = UIColor.whiteColor()
         conditionsLabel.font = UIFont(name: "HelveticaNeue-UltraLight", size: 18)
         conditionsLabel.text = "Clear"
         header.addSubview(conditionsLabel)

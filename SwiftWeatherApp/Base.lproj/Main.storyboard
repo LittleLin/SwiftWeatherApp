@@ -16,9 +16,12 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Wallpaper" translatesAutoresizingMaskIntoConstraints="NO" id="geR-1v-8IU">
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                            </imageView>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="5WZ-s3-lZ4">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" id="11N-8r-DM2">
                                         <autoresizingMask key="autoresizingMask"/>
@@ -36,6 +39,10 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="5WZ-s3-lZ4" firstAttribute="bottom" secondItem="2fi-mo-0CV" secondAttribute="top" id="9me-Mx-1XR"/>
+                            <constraint firstItem="geR-1v-8IU" firstAttribute="bottom" secondItem="2fi-mo-0CV" secondAttribute="top" id="SPK-Xg-Y9x"/>
+                            <constraint firstItem="geR-1v-8IU" firstAttribute="top" secondItem="5WZ-s3-lZ4" secondAttribute="top" id="c0D-MG-ka6"/>
+                            <constraint firstItem="geR-1v-8IU" firstAttribute="trailing" secondItem="5WZ-s3-lZ4" secondAttribute="trailing" id="dhG-ef-GL2"/>
+                            <constraint firstItem="geR-1v-8IU" firstAttribute="leading" secondItem="5WZ-s3-lZ4" secondAttribute="leading" id="lJw-h5-qyH"/>
                             <constraint firstItem="5WZ-s3-lZ4" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leading" id="skK-lm-TTa"/>
                             <constraint firstItem="5WZ-s3-lZ4" firstAttribute="top" secondItem="kh9-bI-dsS" secondAttribute="top" id="u8b-hD-y0X"/>
                             <constraint firstAttribute="trailing" secondItem="5WZ-s3-lZ4" secondAttribute="trailing" id="vz4-gr-wZC"/>
@@ -47,6 +54,10 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="395" y="312"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="Wallpaper" width="320" height="568"/>
+    </resources>
 </document>
