@@ -2,8 +2,6 @@ language: objective-c
 podfile: Podfile
 before_install:
     - gem install xcpretty
-install: make get-deps
 script:
     - set -o pipefail
-    - xcodebuild -project Representor.xcodeproj -scheme Representor test -sdk macosx | xcpretty -c
-    - xcodebuild -project Representor.xcodeproj -scheme Representor test -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO | xcpretty -c
+    - xcodebuild -workspace SwiftWeatherApp.xcworkspace -scheme SwiftWeatherApp test -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO | xcpretty -c
